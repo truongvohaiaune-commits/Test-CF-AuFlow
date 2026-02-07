@@ -353,7 +353,9 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
         }
     };
 
-    const handleGenerateSingleView = async (slot: CreativeSlot, skipCredits = false) => {
+       const handleGenerateSingleView = async (slot: CreativeSlot, skipCredits = false) => {
+        if (!sourceImage) return;
+
         const uniqueKey = getResultKey(creativeOption, slot.id);
         const cost = resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5;
         if (!skipCredits && onDeductCredits && userCredits < cost) { if (onInsufficientCredits) onInsufficientCredits(); return; }
@@ -364,7 +366,7 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
             if (!skipCredits && onDeductCredits) await onDeductCredits(cost, `Creative View: ${slot.name}`);
             const finalPrompt = getFullPromptWithHiddenBoilerplate(currentPromptValue);
             const modelName = resolution === 'Standard' ? "GEM_PIX" : "GEM_PIX_2";
-            const inputImages = [sourceImage];
+            const inputImages: FileData[] = [sourceImage];
             if (characterImage) inputImages.push(characterImage);
             
             const result = await externalVideoService.generateFlowImage(finalPrompt, inputImages, aspectRatio, 1, modelName);
