@@ -379,8 +379,17 @@ const AppContent: React.FC = () => {
   const handleGoHome = () => { setView('homepage'); safeHistoryPush('/'); }
   const handleOpenGallery = () => { if (session) { setView('app'); setActiveTool(Tool.History); safeHistoryPush('/feature'); } }
 
-  const handleToolStateChange = <T extends keyof ToolStates>(tool: T, newState: Partial<ToolStates[T]>) => {
-    setToolStates(prev => ({ ...prev, [tool]: { ...prev[tool], ...newState } }));
+  const handleToolStateChange = <T extends keyof ToolStates>(
+    tool: T, 
+    newState: Partial<ToolStates[T]> | ((prevState: ToolStates[T]) => Partial<ToolStates[T]>)
+  ) => {
+    setToolStates(prev => {
+        const current = prev[tool];
+        const updates = typeof newState === 'function' 
+            ? (newState as (p: ToolStates[T]) => Partial<ToolStates[T]>)(current)
+            : newState;
+        return { ...prev, [tool]: { ...current, ...updates } };
+    });
   };
 
   const handleNavigateToPricing = () => { setView('pricing'); safeHistoryPush('/pricing'); }
