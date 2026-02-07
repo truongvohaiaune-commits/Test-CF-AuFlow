@@ -47,6 +47,9 @@ const Renovation: React.FC<RenovationProps> = ({ state, onStateChange, userCredi
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
     const modeDropdownRef = useRef<HTMLDivElement>(null);
 
+    // Calculate Cost
+    const cost = numberOfImages * (resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5);
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (modeDropdownRef.current && !modeDropdownRef.current.contains(event.target as Node)) {
@@ -264,7 +267,6 @@ const Renovation: React.FC<RenovationProps> = ({ state, onStateChange, userCredi
     };
 
     const handleGenerate = async () => {
-        const cost = numberOfImages * (resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5);
         if (onDeductCredits && userCredits < cost) {
              if (onInsufficientCredits) onInsufficientCredits();
              return;
@@ -491,7 +493,7 @@ const Renovation: React.FC<RenovationProps> = ({ state, onStateChange, userCredi
                 </div>
                 <div className="p-4 bg-white dark:bg-[#1A1A1A] border-t border-border-color dark:border-[#302839] lg:sticky lg:bottom-0 z-10 shadow-[0_-8px_20px_rgba(0,0,0,0.05)]">
                     <button onClick={handleGenerate} disabled={isLoading || !sourceImage} className="w-full flex justify-center items-center gap-2 bg-[#7f13ec] hover:bg-[#690fca] text-white font-bold py-3 sm:py-4 rounded-xl transition-all shadow-lg active:scale-95 text-sm sm:text-base">
-                        {isLoading ? <><Spinner /> <span>{statusMessage}</span></> : <><span>{t('reno.btn_generate')}</span> <span className="material-symbols-outlined text-yellow-400 text-base sm:text-lg align-middle notranslate">monetization_on</span></>}
+                        {isLoading ? <><Spinner /> <span>{statusMessage}</span></> : <><span>{t('reno.btn_generate')} <span className="opacity-70 ml-1">| {cost}</span></span> <span className="material-symbols-outlined text-yellow-400 text-base sm:text-lg align-middle notranslate">monetization_on</span></>}
                     </button>
                 </div>
             </aside>
