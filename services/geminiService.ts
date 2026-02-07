@@ -129,36 +129,66 @@ export const generateCreativeViewPrompt = async (
 
         YÊU CẦU BẮT BUỘC ĐỂ ĐẢM BẢO TÍNH THỰC TẾ:
         1. SOI CHI TIẾT THẬT: Nhìn kỹ ảnh mẫu để nhận diện đích danh vật liệu (ví dụ: đá Marble trắng vân mây, gỗ Sồi màu hạt dẻ, kim loại đồng xước...). Tuyệt đối không dùng từ chung chung.
-        2. KỸ THUẬT GÓC MÁY THEO SLOT:
-           - TỔNG THỂ 1: Phối cảnh từ trên cao nhìn xuống chéo một góc 45 độ (Bird's eye), bao quát toàn bộ khối tích dự án.
-           - TỔNG THỂ 2: Góc nhìn mở rộng tổng thể phối cảnh Hero Shot 3/4, nhấn mạnh sự cân đối và ngôn ngữ thiết kế chính.
-           - TỔNG THỂ 3: Góc nhìn thấp từ dưới lên (Low angle), sử dụng ống kính góc rộng hoặc tầm nhìn mắt người thực quan sát công trình hùng vĩ.
-           - CẬN CẢNH 1: Đặc tả sự tinh xảo của các đường nét và giao điểm cấu tạo, kết nối khối hình và tỷ lệ chuẩn xác.
-           - CẬN CẢNH 2: Tập trung vào sự sắp đặt decor và trang trí tinh tế, tạo cảm giác cao cấp và Lifestyle.
-           - CẬN CẢNH 3: Đặc tả một loại vật liệu cao cấp đặc trưng (vân đá, thớ gỗ) dưới ánh sáng studio chuyên nghiệp.
-           - LẤY NÉT 1: Macro Focus vào một chi tiết trang trí đặc biệt, độ sâu trường ảnh mỏng, xóa phông hoàn toàn hậu cảnh.
-           - LẤY NÉT 2: Góc lấy nét kịch tính với xóa phông tiền cảnh (Foreground Bokeh) mạnh mẽ, dẫn dắt ánh nhìn vào điểm hội tụ duy nhất.
-           - LẤY NÉT 3: Góc chụp siêu cận (Extreme Close-up), zoom sát vào một bề mặt vật liệu hoặc giao điểm cấu tạo tinh vi để soi rõ vân và kết cấu bề mặt. Sử dụng ánh sáng studio tạt ngang để nhấn mạnh độ nổi khối (texture) và bóng đổ kịch tính, phong cách nhiếp ảnh nghệ thuật Magazine.
+        
+        2. KỸ THUẬT GÓC MÁY (Phân tích theo tên view):
+           
+           **NHÓM MARKETING (Bộ ảnh MKT):**
+           - TỔNG THỂ 1 (Hero Shot): Phối cảnh 3/4 mặt tiền chính, nhấn mạnh khối tích và ngôn ngữ thiết kế chủ đạo.
+           - TỔNG THỂ 2 (Bird's eye): Góc nhìn từ trên cao 45 độ, bao quát toàn bộ công trình và cảnh quan lân cận.
+           - TỔNG THỂ 3 (Low angle): Góc thấp ngước lên, dùng ống kính rộng để tôn vinh vẻ hùng vĩ và chiều cao.
+           - CẬN CẢNH 1 (Kết cấu): Zoom vào giao điểm của các khối, đường nét kiến trúc và sự chuyển giao vật liệu.
+           - CẬN CẢNH 2 (Decor/Lifestyle): Tập trung vào chi tiết trang trí, cây xanh hoặc đồ ngoại thất để tạo cảm xúc.
+           - CẬN CẢNH 3 (Vật liệu): Đặc tả bề mặt vật liệu (texture) dưới ánh sáng studio sắc nét.
+           - LẤY NÉT 1 (Macro): Focus cực cận vào một chi tiết đắt giá, xóa phông mờ ảo.
+           - LẤY NÉT 2 (Bokeh): Góc nhìn nghệ thuật với tiền cảnh bị làm mờ (lá cây, vật thể) dẫn mắt vào chủ thể.
+           - LẤY NÉT 3 (Ánh sáng): Tập trung vào sự tương tác giữa ánh sáng và bóng đổ trên bề mặt công trình.
+
+           **NHÓM KIẾN TRÚC (View Kiến trúc):**
+           - TOÀN CẢNH 1 (Bình minh): Góc chụp CHÍNH DIỆN toàn cảnh (Frontal Wide Shot). Thu trọn mặt tiền công trình và bối cảnh hai bên. Ánh sáng sớm mai trong trẻo, bầu trời xanh dịu, sương sớm.
+           - TOÀN CẢNH 2 (Hoàng hôn): Góc phối cảnh 3/4 từ xa (Distant 3/4 Perspective). Nhìn từ góc chéo để thấy chiều sâu khối nhà. Giờ vàng (Golden Hour), bầu trời rực rỡ, bóng đổ dài kịch tính.
+           - TOÀN CẢNH 3 (Chim bay): View quy hoạch tổng thể nhìn thẳng từ trên xuống hoặc chéo cao, thấy rõ mái và sân vườn.
+           - CẬN CẢNH 1 (Vật liệu): Zoom vào bề mặt tường, gạch, gỗ. Nhấn mạnh độ nhám, độ bóng và màu sắc thực tế.
+           - CẬN CẢNH 2 (Cấu tạo): Tập trung vào khớp nối, chi tiết lan can, ô văng hoặc khung cửa sổ.
+           - CẬN CẢNH 3 (Lối vào): Góc nhìn ngang tầm mắt người đi vào sảnh chính/cổng, cảm giác chào đón.
+           - CẬN CẢNH 4 (Góc cạnh): Khai thác các đường chéo và góc cạnh mạnh mẽ của hình khối kiến trúc.
+           - NGHỆ THUẬT 1 (Xóa phông): Góc nhìn 'moody', độ sâu trường ảnh mỏng (DoF), tập trung vào một điểm nhấn duy nhất.
+           - NGHỆ THUẬT 2 (Đêm): Phối cảnh đêm với ánh sáng nhân tạo (đèn hắt, đèn nội thất) làm nổi bật công trình trên nền trời tối.
+
         3. THỐNG NHẤT: Giữ 100% phong cách, màu sắc và linh hồn từ ảnh gốc.
-        4. TRẢ VỀ: Tiếng Việt, chỉ nội dung mô tả prompt, không lời dẫn.`;
+        4. TRẢ VỀ: Tiếng Việt, chỉ nội dung mô tả prompt, ngắn gọn, súc tích, không lời dẫn.`;
     } else {
         systemInstruction = `You are a Professional Architectural Photographer for high-end magazines.
         TASK: Analyze the source image and write a descriptive prompt (3-4 sentences) for the view: "${viewName}".
 
         STRICT REQUIREMENTS:
         1. IDENTIFY REAL MATERIALS: Specify exact materials found in the source (e.g., Calacatta Marble, Walnut wood, brushed brass). Avoid generic terms.
-        2. SHOT SPECIFICATIONS:
-           - OVERALL 1: 45-degree Bird's Eye view from above.
-           - OVERALL 2: Expanded Hero Shot 3/4 perspective.
-           - OVERALL 3: Low Angle wide-lens perspective, majestic human eye level.
-           - CLOSE-UP 1: Focus on craftsmanship of lines and structural intersections.
-           - CLOSE-UP 2: Focus on curated styling and high-end decor arrangements.
-           - CLOSE-UP 3: Detailed material study (grain, veins) under professional studio lighting.
-           - FOCUSED 1: Artistic Macro Focus on a decorative detail, shallow DOF, blurred background.
-           - FOCUSED 2: Dramatic focus with strong FOREGROUND bokeh, leading eyes to a convergent point.
-           - FOCUSED 3: Extreme Close-up / Super Macro. Zoom in tightly on a specific material surface or intersection to reveal intricate textures. Use dramatic side lighting for high contrast and texture definition, high-end magazine photography style.
+        
+        2. SHOT SPECIFICATIONS (Analyze based on View Name):
+           
+           **MARKETING SET:**
+           - OVERALL 1 (Hero Shot): 3/4 Front perspective, emphasizing massing and main design language.
+           - OVERALL 2 (Bird's Eye): 45-degree aerial view, covering the entire building and context.
+           - OVERALL 3 (Low Angle): Worm's eye view with wide lens for majesty and height.
+           - CLOSE-UP 1 (Structure): Focus on intersection of forms, lines, and material transitions.
+           - CLOSE-UP 2 (Decor): Focus on styling, greenery, or outdoor furniture for lifestyle vibe.
+           - CLOSE-UP 3 (Material): Detailed texture study under sharp professional lighting.
+           - FOCUSED 1 (Macro): Extreme close-up on a key detail with shallow depth of field.
+           - FOCUSED 2 (Bokeh): Artistic shot with blurred foreground leading eye to subject.
+           - FOCUSED 3 (Light): Focus on interplay of light and shadow on surfaces.
+
+           **ARCHITECTURAL SET:**
+           - PANORAMA 1 (Sunrise): Frontal Wide Shot. Capture the full facade and side context. Clear morning light, soft blue sky, fresh atmosphere.
+           - PANORAMA 2 (Sunset): Distant 3/4 Perspective View. Diagonal angle to show depth. Golden Hour, dramatic sky, warm long shadows.
+           - PANORAMA 3 (Birdseye): High aerial view showing roof plan and site layout clearly.
+           - CLOSE-UP 1 (Material): Zoom in on wall surfaces, brick, wood. Emphasize roughness, gloss, and true color.
+           - CLOSE-UP 2 (Structure): Focus on joints, railings, overhangs, or window frames.
+           - CLOSE-UP 3 (Entrance): Eye-level view approaching the main entrance/gate, welcoming feel.
+           - CLOSE-UP 4 (Corner): Exploit strong diagonals and angular geometry of the architecture.
+           - ARTISTIC 1 (Bokeh): 'Moody' shot, thin Depth of Field, focused on a single accent point.
+           - ARTISTIC 2 (Night): Night scene with artificial lighting highlighting the building against dark sky.
+
         3. CONSISTENCY: Maintain 100% style and palette from source.
-        4. RETURN: English, only the prompt content, no conversational filler.`;
+        4. RETURN: English, only the prompt content, concise, no conversational filler.`;
     }
 
     return retryOperation(async () => {
