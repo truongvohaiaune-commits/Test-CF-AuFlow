@@ -289,7 +289,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ plan, user, onBack, onSuccess
                                                 value={fullName}
                                                 onChange={(e) => setFullName(e.target.value)}
                                                 placeholder="Nguyễn Văn A"
-                                                className="w-full bg-white dark:bg-[#1E1E1E] border border-border-color dark:border-[#333] rounded-xl p-3.5 text-sm outline-none focus:ring-2 focus:ring-[#7f13ec]/30 transition-all font-medium"
+                                                className="w-full bg-white dark:bg-[#1E1E1E] border border-border-color dark:border-[#333] rounded-xl p-3.5 text-sm text-text-primary dark:text-white outline-none focus:ring-2 focus:ring-[#7f13ec]/30 transition-all font-medium"
                                             />
                                         </div>
                                         <div>
@@ -301,7 +301,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ plan, user, onBack, onSuccess
                                                 value={phoneNumber}
                                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                                 placeholder="0912345678"
-                                                className="w-full bg-white dark:bg-[#1E1E1E] border border-border-color dark:border-[#333] rounded-xl p-3.5 text-sm outline-none focus:ring-2 focus:ring-[#7f13ec]/30 transition-all font-medium"
+                                                className="w-full bg-white dark:bg-[#1E1E1E] border border-border-color dark:border-[#333] rounded-xl p-3.5 text-sm text-text-primary dark:text-white outline-none focus:ring-2 focus:ring-[#7f13ec]/30 transition-all font-medium"
                                             />
                                         </div>
                                         <div className="pt-4">
