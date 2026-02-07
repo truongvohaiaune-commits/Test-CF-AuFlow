@@ -21,7 +21,7 @@ import { useLanguage } from '../hooks/useLanguage';
 
 interface ViewSyncProps {
     state: ViewSyncState;
-    onStateChange: (newState: Partial<ViewSyncState>) => void;
+    onStateChange: (newState: Partial<ViewSyncState> | ((prevState: ViewSyncState) => Partial<ViewSyncState>)) => void;
     userCredits?: number;
     onDeductCredits?: (amount: number, description: string) => Promise<string>;
     onInsufficientCredits?: () => void;
@@ -43,7 +43,9 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
         sourceImage, directionImage, characterImage, isLoading, error, resultImages, numberOfImages, sceneType,
         aspectRatio, customPrompt, selectedPerspective, selectedAtmosphere,
         selectedFraming, selectedInteriorAngle, resolution,
-        activeTab = 'sync', creativeOption = 'interior', creativeResults = {}, creativePrompts = {}
+        activeTab = 'sync', creativeOption = 'interior', creativeResults = {}, creativePrompts = {},
+        // Destructure state values that replace local state
+        generatingViews = [], analyzingViews = [], isBatchGenerating = false
     } = state;
 
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -53,9 +55,6 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
     const [selectedIndex, setSelectedIndex] = useState(0);
     
     const [isCreativeModeSelected, setIsCreativeModeSelected] = useState(false);
-    const [generatingViews, setGeneratingViews] = useState<Set<string>>(new Set());
-    const [analyzingViews, setAnalyzingViews] = useState<Set<string>>(new Set());
-    const [isBatchGenerating, setIsBatchGenerating] = useState(false);
 
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
     const modeDropdownRef = useRef<HTMLDivElement>(null);
@@ -65,6 +64,12 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
 
     const latestPromptsRef = useRef(creativePrompts);
     useEffect(() => { latestPromptsRef.current = creativePrompts; }, [creativePrompts]);
+
+    const latestGeneratingViewsRef = useRef(generatingViews);
+    useEffect(() => { latestGeneratingViewsRef.current = generatingViews; }, [generatingViews]);
+
+    const latestAnalyzingViewsRef = useRef(analyzingViews);
+    useEffect(() => { latestAnalyzingViewsRef.current = analyzingViews; }, [analyzingViews]);
 
     useEffect(() => {
         if (resultImages.length > 0) setSelectedIndex(0);
@@ -143,15 +148,15 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
     ], [t]);
 
     const architectureSlots: CreativeSlot[] = useMemo(() => [
-        { id: 'pano1', name: t('sync.creative.slot.pano1'), sub: t('sync.creative.sub.sunrise'), icon: 'wb_twilight', promptDescription: t('sync.creative.desc.pano1') },
-        { id: 'pano2', name: t('sync.creative.slot.pano2'), sub: t('sync.creative.sub.sunset'), icon: 'wb_sunny', promptDescription: t('sync.creative.desc.pano2') },
-        { id: 'pano3', name: t('sync.creative.slot.pano3'), sub: t('sync.creative.sub.birdseye'), icon: 'flight', promptDescription: t('sync.creative.desc.pano3') },
-        { id: 'close1', name: t('sync.creative.slot.close1'), sub: t('sync.creative.sub.material'), icon: 'texture', promptDescription: t('sync.creative.desc.close1') },
-        { id: 'close2', name: t('sync.creative.slot.close2'), sub: t('sync.creative.sub.structure'), icon: 'construction', promptDescription: t('sync.creative.desc.close2') },
-        { id: 'close3', name: t('sync.creative.slot.close3'), sub: t('sync.creative.sub.entrance'), icon: 'door_front', promptDescription: t('sync.creative.desc.close3') },
-        { id: 'close4', name: t('sync.creative.slot.close4'), sub: t('sync.creative.sub.corner'), icon: 'camera_alt', promptDescription: t('sync.creative.desc.close4') },
-        { id: 'art1', name: t('sync.creative.slot.art1'), sub: t('sync.creative.sub.bokeh'), icon: 'blur_on', promptDescription: t('sync.creative.desc.art1') },
-        { id: 'art2', name: t('sync.creative.slot.art2'), sub: t('sync.creative.sub.night'), icon: 'nights_stay', promptDescription: t('sync.creative.desc.art2') }
+        { id: 'pano1', name: t('sync.creative.slot.pano1'), sub: t('sync.creative.sub.sunrise'), icon: 'wb_twilight', promptDescription: t('sync.creative.desc.pano1'), groupType: 'overall' },
+        { id: 'pano2', name: t('sync.creative.slot.pano2'), sub: t('sync.creative.sub.sunset'), icon: 'wb_sunny', promptDescription: t('sync.creative.desc.pano2'), groupType: 'overall' },
+        { id: 'pano3', name: t('sync.creative.slot.pano3'), sub: t('sync.creative.sub.birdseye'), icon: 'flight', promptDescription: t('sync.creative.desc.pano3'), groupType: 'overall' },
+        { id: 'close1', name: t('sync.creative.slot.close1'), sub: t('sync.creative.sub.material'), icon: 'texture', promptDescription: t('sync.creative.desc.close1'), groupType: 'closeup' },
+        { id: 'close2', name: t('sync.creative.slot.close2'), sub: t('sync.creative.sub.structure'), icon: 'construction', promptDescription: t('sync.creative.desc.close2'), groupType: 'closeup' },
+        { id: 'close3', name: t('sync.creative.slot.close3'), sub: t('sync.creative.sub.entrance'), icon: 'door_front', promptDescription: t('sync.creative.desc.close3'), groupType: 'closeup' },
+        { id: 'close4', name: t('sync.creative.slot.close4'), sub: t('sync.creative.sub.corner'), icon: 'camera_alt', promptDescription: t('sync.creative.desc.close4'), groupType: 'closeup' },
+        { id: 'art1', name: t('sync.creative.slot.art1'), sub: t('sync.creative.sub.bokeh'), icon: 'blur_on', promptDescription: t('sync.creative.desc.art1'), groupType: 'focused' },
+        { id: 'art2', name: t('sync.creative.slot.art2'), sub: t('sync.creative.sub.night'), icon: 'nights_stay', promptDescription: t('sync.creative.desc.art2'), groupType: 'focused' }
     ], [t]);
 
     const marketingSlots: CreativeSlot[] = useMemo(() => [
@@ -211,18 +216,19 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
 
     const handleSelectCreativeOption = (optionId: string) => { 
         const newPrompts: Record<string, string> = {};
-        if (optionId !== 'marketing-showcase') {
-            const slots = optionId === 'architecture' ? architectureSlots : (optionId === 'interior' ? interiorSlots : interiorSlots);
+        if (optionId !== 'marketing-showcase' && optionId !== 'architecture') {
+            const slots = optionId === 'interior' ? interiorSlots : interiorSlots;
             slots.forEach(slot => { 
                 newPrompts[slot.id] = getPromptTemplateForSlot(slot, optionId, characterImage); 
             });
         }
+        // If architecture or marketing-showcase, we leave prompts empty to trigger dynamic generation in batch
         onStateChange({ creativeOption: optionId as any, creativeResults: {}, creativePrompts: newPrompts }); 
         setIsCreativeModeSelected(true); 
     };
 
     useEffect(() => {
-        if (activeTab === 'creative' && creativeOption !== 'marketing-showcase') {
+        if (activeTab === 'creative' && creativeOption !== 'marketing-showcase' && creativeOption !== 'architecture') {
             const newPrompts = { ...creativePrompts };
             currentSlots.forEach(slot => {
                 newPrompts[slot.id] = getPromptTemplateForSlot(slot, creativeOption, characterImage);
@@ -231,9 +237,13 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
         }
     }, [characterImage, creativeOption, activeTab, language]);
 
+    // Cost Calculation for Buttons
+    const unitCost = resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5;
+    const batchCost = currentSlots.length * unitCost;
+
     // --- GENERATION LOGIC ---
     const handleGenerateSync = async () => {
-        const unitCost = resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5;
+        // Recalculate cost inside function to ensure freshness, though unitCost is available in scope
         const totalCost = numberOfImages * unitCost;
         if (onDeductCredits && userCredits < totalCost) { if (onInsufficientCredits) onInsufficientCredits(); return; }
         if (!sourceImage) { onStateChange({ error: t('err.input.image') }); return; }
@@ -301,39 +311,67 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
     };
 
     const handleGenerateBatch = async () => {
-        if (isBatchGenerating || generatingViews.size > 0 || analyzingViews.size > 0) return;
+        if (isBatchGenerating || generatingViews.length > 0 || analyzingViews.length > 0) return;
         
-        const cost = currentSlots.length * (resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5);
-        if (onDeductCredits && userCredits < cost) { if (onInsufficientCredits) onInsufficientCredits(); return; }
+        if (onDeductCredits && userCredits < batchCost) { if (onInsufficientCredits) onInsufficientCredits(); return; }
         if (!sourceImage) return;
         
-        onStateChange({ error: null });
-        setIsBatchGenerating(true);
+        const allKeys = currentSlots.map(s => getResultKey(creativeOption, s.id));
+        // Set all keys at start to show loading state immediately for all slots
+        onStateChange({ error: null, isBatchGenerating: true, generatingViews: allKeys });
 
         try {
-            if (onDeductCredits) await onDeductCredits(cost, `Creative Batch: ${currentSlots.length} views`);
+            if (onDeductCredits) await onDeductCredits(batchCost, `Creative Batch: ${currentSlots.length} views`);
             
-            if (creativeOption === 'marketing-showcase') {
+            if (creativeOption === 'marketing-showcase' || creativeOption === 'architecture') {
                 const allKeys = currentSlots.map(s => getResultKey(creativeOption, s.id));
-                allKeys.forEach(k => setAnalyzingViews(prev => new Set(prev).add(k)));
+                // Use functional update or careful merging with existing state arrays
+                onStateChange((prevState) => ({
+                    analyzingViews: [...prevState.analyzingViews, ...allKeys]
+                }));
                 
-                const accumulator: Record<string, string> = { ...creativePrompts };
-                for (const slot of currentSlots) {
+                const promptUpdates: Record<string, string> = {};
+
+                // Use Promise.all to run requests concurrently
+                await Promise.all(currentSlots.map(async (slot) => {
                     const key = getResultKey(creativeOption, slot.id);
-                    if (!accumulator[slot.id]) {
+                    let promptToUse = latestPromptsRef.current[slot.id];
+                    
+                    // 1. Generate Prompt if missing
+                    if (!promptToUse) {
                         try {
-                            const p = await geminiService.generateCreativeViewPrompt(sourceImage, slot.name, creativeOption, language);
-                            accumulator[slot.id] = p;
-                            onStateChange({ creativePrompts: { ...accumulator } });
+                            const viewNameWithSub = slot.sub ? `${slot.name} - ${slot.sub}` : slot.name;
+                            promptToUse = await geminiService.generateCreativeViewPrompt(sourceImage, viewNameWithSub, creativeOption, language);
+                            
+                            // Store locally to pass to image generator
+                            promptUpdates[slot.id] = promptToUse;
+
+                            // Update UI state for visibility (functional update to avoid race conditions)
+                            onStateChange((prevState) => ({
+                                creativePrompts: { ...prevState.creativePrompts, [slot.id]: promptToUse }
+                            }));
                         } catch (e) {
-                            accumulator[slot.id] = language === 'vi' ? `Góc nhìn ${slot.name}.` : `View of ${slot.name}.`;
-                            onStateChange({ creativePrompts: { ...accumulator } });
+                            promptToUse = language === 'vi' ? `Góc nhìn ${slot.name}.` : `View of ${slot.name}.`;
+                            promptUpdates[slot.id] = promptToUse;
                         }
                     }
-                    setAnalyzingViews(prev => { const n = new Set(prev); n.delete(key); return n; });
-                    await handleGenerateSingleView(slot, true);
-                }
+
+                    // Remove from analyzing list (it's done analyzing, moving to generating)
+                    onStateChange((prevState) => ({
+                        analyzingViews: prevState.analyzingViews.filter(k => k !== key)
+                    }));
+
+                    // 2. Generate Image immediately with the specific prompt (explicitly passed)
+                    await handleGenerateSingleView(slot, true, true, promptToUse);
+                }));
+                
+                // Final state sync to ensure all prompts are saved cleanly
+                onStateChange((prevState) => ({
+                    creativePrompts: { ...prevState.creativePrompts, ...promptUpdates }
+                }));
+
             } else {
+                // Interior Mode (Simple templates, no dynamic analysis)
                 const finalPrompts = { ...creativePrompts };
                 currentSlots.forEach(slot => {
                     if (!finalPrompts[slot.id]) {
@@ -344,25 +382,36 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
                     onStateChange({ creativePrompts: finalPrompts });
                 }
                 
-                await Promise.all(currentSlots.map(slot => handleGenerateSingleView(slot, true)));
+                // Run image generation concurrently
+                await Promise.all(currentSlots.map(slot => handleGenerateSingleView(slot, true, true)));
             }
         } catch (err: any) { 
             onStateChange({ error: t('err.gen.general') }); 
         } finally { 
-            setIsBatchGenerating(false); 
+            // Clear all loading states when batch finishes
+            onStateChange({ isBatchGenerating: false, generatingViews: [], analyzingViews: [] }); 
         }
     };
 
-       const handleGenerateSingleView = async (slot: CreativeSlot, skipCredits = false) => {
+    const handleGenerateSingleView = async (slot: CreativeSlot, skipCredits = false, isBatch = false, explicitPrompt?: string) => {
         if (!sourceImage) return;
 
         const uniqueKey = getResultKey(creativeOption, slot.id);
         const cost = resolution === '4K' ? 30 : resolution === '2K' ? 20 : resolution === '1K' ? 10 : 5;
         if (!skipCredits && onDeductCredits && userCredits < cost) { if (onInsufficientCredits) onInsufficientCredits(); return; }
         
-        setGeneratingViews(prev => new Set(prev).add(uniqueKey));
+        // If NOT batch, add this specific key to generatingViews
+        if (!isBatch) {
+            const currentGen = latestGeneratingViewsRef.current;
+            if (!currentGen.includes(uniqueKey)) {
+                onStateChange({ generatingViews: [...currentGen, uniqueKey] });
+            }
+        }
+
         try {
-            const currentPromptValue = latestPromptsRef.current[slot.id] || getPromptTemplateForSlot(slot, creativeOption, characterImage);
+            // Use explicitPrompt if provided (from batch loop), otherwise fall back to ref/state/template
+            const currentPromptValue = explicitPrompt || latestPromptsRef.current[slot.id] || getPromptTemplateForSlot(slot, creativeOption, characterImage);
+            
             if (!skipCredits && onDeductCredits) await onDeductCredits(cost, `Creative View: ${slot.name}`);
             const finalPrompt = getFullPromptWithHiddenBoilerplate(currentPromptValue);
             const modelName = resolution === 'Standard' ? "GEM_PIX" : "GEM_PIX_2";
@@ -377,10 +426,22 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
                     const upscaleRes = await externalVideoService.upscaleFlowImage(result.mediaIds[0], result.projectId, targetRes, aspectRatio);
                     if (upscaleRes?.imageUrl) finalUrl = upscaleRes.imageUrl;
                 }
-                onStateChange({ creativeResults: { ...latestResultsRef.current, [uniqueKey]: finalUrl } });
+                
+                // Use functional update to avoid race conditions with other completing images
+                onStateChange((prevState) => ({
+                    creativeResults: { ...prevState.creativeResults, [uniqueKey]: finalUrl }
+                }));
+
                 historyService.addToHistory({ tool: Tool.ViewSync, prompt: `Creative: ${slot.name}`, sourceImageURL: sourceImage?.objectURL, resultImageURL: finalUrl });
             }
-        } catch (e) { console.error(e); } finally { setGeneratingViews(prev => { const n = new Set(prev); n.delete(uniqueKey); return n; }); }
+        } catch (e) { console.error(e); } finally { 
+            // If NOT batch, remove this key. If batch, leave it (batch finally block clears all)
+            if (!isBatch) {
+                onStateChange((prevState) => ({
+                    generatingViews: prevState.generatingViews.filter(k => k !== uniqueKey)
+                }));
+            }
+        }
     };
 
     const getResultKey = (option: string, slotId: string) => `${option}-${slotId}`;
@@ -390,8 +451,9 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
     const handleDownload = async (url: string, name: string) => { setIsDownloading(true); await externalVideoService.forceDownload(url, `creative-${name}.png`); setIsDownloading(false); };
     const handleDownloadAllCreative = async () => { setIsDownloading(true); for (const slot of currentSlots) { const url = creativeResults[getResultKey(creativeOption, slot.id)]; if (url) { await externalVideoService.forceDownload(url, `${slot.name}.png`); await new Promise(r => setTimeout(r, 800)); } } setIsDownloading(false); };
 
-    const selectedOptionData = creativeOptions.find(o => o.id === creativeOption);
-    const hasCreativeResults = currentSlots.some(s => !!creativeResults[getResultKey(creativeOption, s.id)]);
+    // FIX: Define selectedOptionData and hasCreativeResults
+    const selectedOptionData = useMemo(() => creativeOptions.find(o => o.id === creativeOption), [creativeOptions, creativeOption]);
+    const hasCreativeResults = Object.keys(creativeResults).length > 0;
 
     return (
         <div className="flex flex-col gap-0 w-full lg:-mt-6">
@@ -445,7 +507,7 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
                         </div>
                         <div className="p-4 bg-white dark:bg-[#1A1A1A] border-t border-border-color dark:border-[#302839] lg:sticky lg:bottom-0 z-10 shadow-[0_-8px_20px_rgba(0,0,0,0.05)]">
                             <button onClick={handleGenerateSync} disabled={isLoading || !sourceImage} className="w-full flex justify-center items-center gap-2 bg-[#7f13ec] hover:bg-[#690fca] text-white font-bold py-3 sm:py-4 rounded-xl transition-all shadow-lg active:scale-95 text-sm sm:text-base">
-                                {isLoading ? <><Spinner /> <span>{statusMessage}</span></> : <><span>{t('sync.btn_generate')}</span> <span className="material-symbols-outlined text-yellow-400 text-base sm:text-lg align-middle notranslate">monetization_on</span></>}
+                                {isLoading ? <><Spinner /> <span>{statusMessage}</span></> : <><span>{t('sync.btn_generate')} <span className="opacity-70 ml-1">| {numberOfImages * unitCost}</span></span> <span className="material-symbols-outlined text-yellow-400 text-base sm:text-lg align-middle notranslate">monetization_on</span></>}
                             </button>
                         </div>
                     </aside>
@@ -547,11 +609,20 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
                             <ResolutionSelector value={resolution} onChange={handleResolutionChange} />
                             <button 
                                 onClick={handleGenerateBatch} 
-                                disabled={isBatchGenerating || generatingViews.size > 0 || analyzingViews.size > 0 || !sourceImage} 
+                                disabled={isBatchGenerating || generatingViews.length > 0 || analyzingViews.length > 0 || !sourceImage} 
                                 className="w-full py-4 bg-[#7f13ec] hover:bg-[#690fca] text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transform active:scale-95 text-sm uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isBatchGenerating || generatingViews.size > 0 || analyzingViews.size > 0 ? <Spinner /> : <span className="material-symbols-outlined">auto_awesome</span>}
-                                {isBatchGenerating || generatingViews.size > 0 || analyzingViews.size > 0 ? t('sync.workspace.generating_wait') : t('sync.workspace.btn_generate_batch').replace('{count}', currentSlots.length.toString())}
+                                {isBatchGenerating || generatingViews.length > 0 || analyzingViews.length > 0 ? <Spinner /> : <span className="material-symbols-outlined">auto_awesome</span>}
+                                {isBatchGenerating || generatingViews.length > 0 || analyzingViews.length > 0 
+                                    ? t('sync.workspace.generating_wait') 
+                                    : (
+                                        <span>
+                                            {t('sync.workspace.btn_generate_batch').replace('{count}', currentSlots.length.toString())}
+                                            <span className="opacity-80 ml-1.5 font-bold">| {batchCost}</span>
+                                            <span className="material-symbols-outlined text-yellow-400 text-lg align-middle ml-1">monetization_on</span>
+                                        </span>
+                                    )
+                                }
                             </button>
                         </div>
                     </div>
@@ -570,8 +641,8 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
                             {currentSlots.map(slot => {
                                 const key = getResultKey(creativeOption, slot.id);
                                 const resultUrl = creativeResults[key];
-                                const isGenerating = generatingViews.has(key);
-                                const isAnalyzing = analyzingViews.has(key);
+                                const isGenerating = generatingViews.includes(key);
+                                const isAnalyzing = analyzingViews.includes(key);
                                 const currentPrompt = creativePrompts[slot.id] || "";
                                 return (
                                     <div key={slot.id} className="bg-white dark:bg-[#1E1E1E] rounded-2xl overflow-hidden border border-gray-200 dark:border-[#302839] hover:border-[#7f13ec]/50 transition-all duration-300 shadow-lg flex flex-col h-full group">
@@ -587,8 +658,20 @@ const ViewSync: React.FC<ViewSyncProps> = ({ state, onStateChange, userCredits =
                                             <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none"><h4 className="text-xs font-bold text-white shadow-sm">{slot.name}</h4>{slot.sub && <p className="text-[8px] text-gray-300 font-medium uppercase">{slot.sub}</p>}</div>
                                         </div>
                                         <div className="p-4 border-t border-gray-100 dark:border-[#302839] bg-gray-50 dark:bg-[#222] flex flex-col gap-3 flex-grow">
-                                            <div className="flex flex-col gap-1.5 flex-grow"><label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">description</span> LỜI NHẮC AI</label><div className={`bg-white dark:bg-black/30 rounded-lg border border-gray-200 dark:border-white/5 overflow-hidden flex-grow shadow-inner transition-all duration-300 ${!currentPrompt ? 'h-10' : 'h-32 sm:h-40'}`}><textarea value={currentPrompt} onChange={(e) => onStateChange({ creativePrompts: { ...creativePrompts, [slot.id]: e.target.value } })} className="w-full text-[11px] font-medium text-text-primary dark:text-gray-200 leading-relaxed bg-transparent p-3 outline-none resize-none h-full" placeholder="..." /></div></div>
-                                            <button onClick={() => handleGenerateSingleView(slot)} disabled={isGenerating || isAnalyzing || !sourceImage} className={`w-full py-2.5 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-2 ${resultUrl ? 'bg-gray-800 text-gray-300' : 'bg-[#7f13ec] text-white shadow-lg'}`}>{isGenerating || isAnalyzing ? <Spinner /> : <span className="material-symbols-outlined text-sm">{resultUrl ? 'refresh' : 'auto_fix_high'}</span>}{isGenerating || isAnalyzing ? (isAnalyzing ? "Analyzing..." : "Generating...") : (resultUrl ? t('sync.workspace.regenerate') : t('sync.workspace.generate'))}</button>
+                                            <div className="flex flex-col gap-1.5 flex-grow"><label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">description</span> LỜI NHẮC AI</label><div className={`bg-white dark:bg-black/30 rounded-lg border border-gray-200 dark:border-white/5 overflow-hidden flex-grow shadow-inner transition-all duration-300 ${!currentPrompt ? 'h-10' : 'h-32 sm:h-40'}`}><textarea value={currentPrompt} onChange={(e) => onStateChange((prev: any) => ({ creativePrompts: { ...prev.creativePrompts, [slot.id]: e.target.value } }))} className="w-full text-[11px] font-medium text-text-primary dark:text-gray-200 leading-relaxed bg-transparent p-3 outline-none resize-none h-full" placeholder="..." /></div></div>
+                                            <button onClick={() => handleGenerateSingleView(slot)} disabled={isGenerating || isAnalyzing || !sourceImage || isBatchGenerating} className={`w-full py-2.5 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-2 ${resultUrl ? 'bg-gray-800 text-gray-300' : 'bg-[#7f13ec] text-white shadow-lg'}`}>
+                                                {isGenerating || isAnalyzing ? <Spinner /> : <span className="material-symbols-outlined text-sm">{resultUrl ? 'refresh' : 'auto_fix_high'}</span>}
+                                                {isGenerating || isAnalyzing 
+                                                    ? (isAnalyzing ? "Analyzing..." : "Generating...") 
+                                                    : (
+                                                        <span>
+                                                            {resultUrl ? t('sync.workspace.regenerate') : t('sync.workspace.generate')}
+                                                            <span className="opacity-80 ml-1 font-bold">| {unitCost}</span>
+                                                            <span className="material-symbols-outlined text-yellow-400 text-sm align-middle ml-1">monetization_on</span>
+                                                        </span>
+                                                    )
+                                                }
+                                            </button>
                                         </div>
                                     </div>
                                 );
