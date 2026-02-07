@@ -166,7 +166,8 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                 </div>
             </header>
 
-            <main className="flex-grow px-4 sm:px-10 py-16 max-w-[1200px] mx-auto w-full">
+            {/* MAIN CONTENT - WIDENED MAX-W TO SUPPORT 4 COLS */}
+            <main className="flex-grow px-4 sm:px-6 md:px-8 py-16 max-w-[1440px] mx-auto w-full">
                 <div className="text-center mb-16">
                     <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">{t('pricing.title')}</h1>
                     <p className="text-lg text-gray-400 max-w-2xl mx-auto">
@@ -174,8 +175,8 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                     </p>
                 </div>
 
-                {/* PRICING GRID */}
-                <div className={`grid grid-cols-1 md:grid-cols-2 ${activePlans.length >= 3 ? 'lg:grid-cols-3' : ''} ${activePlans.length === 4 ? 'xl:grid-cols-4' : ''} gap-4 lg:gap-6 items-stretch mb-20`}>
+                {/* PRICING GRID - ADJUSTED BREAKPOINTS & GAPS */}
+                <div className={`grid grid-cols-1 md:grid-cols-2 ${activePlans.length >= 3 ? 'lg:grid-cols-3' : ''} ${activePlans.length === 4 ? 'xl:grid-cols-4' : ''} gap-4 lg:gap-5 xl:gap-6 items-stretch mb-20`}>
                     {activePlans.map((plan) => {
                         const discountPercent = plan.originalPrice 
                             ? Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100) 
@@ -184,9 +185,8 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                         // Locale for currency formatting
                         const locale = language === 'vi' ? 'vi-VN' : 'en-US';
 
-                        // Logic for Credit Booster: Only active if user has an active subscription date
+                        // Logic for Credit Booster
                         const isCreditPlan = plan.type === 'credit';
-                        // Check if subscriptionEnd exists and is not expired. Null means no sub (new user/forever free).
                         const hasValidSubscription = userStatus && userStatus.subscriptionEnd && !userStatus.isExpired;
                         
                         // Logic for Subscription Tiering
@@ -199,16 +199,14 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                         // 1. Credit Plan Rules
                         if (isCreditPlan) {
                             if (!session) {
-                                // Guest needs to login first, but technically we allow clicking to trigger auth
                                 buttonText = t('pricing.select_plan');
                             } else if (!hasValidSubscription) {
                                 isButtonDisabled = true;
                                 buttonText = language === 'vi' ? 'Cần có Gói d.vụ' : 'Requires Active Plan';
                             }
                         } 
-                        // 2. Subscription Plan Rules (Only if logged in and has active sub)
+                        // 2. Subscription Plan Rules
                         else if (isSubscription && session && currentTier > 0) {
-                            // CRITICAL: Current Plan and Upgrade logic restricted to English
                             if (language === 'en') {
                                 if (targetTier === currentTier) {
                                     isButtonDisabled = true;
@@ -217,7 +215,6 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                                     isButtonDisabled = true;
                                     buttonText = 'Already on Higher Plan';
                                 } else {
-                                    // Upgrade
                                     buttonText = 'Upgrade';
                                 }
                             }
@@ -228,7 +225,7 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                         return (
                             <div 
                                 key={plan.id}
-                                className={`relative flex flex-col h-full p-6 md:p-4 lg:p-6 rounded-2xl transition-all duration-300 border group ${
+                                className={`relative flex flex-col h-full p-5 lg:p-6 rounded-2xl transition-all duration-300 border group ${
                                     plan.highlight 
                                         ? 'bg-[#191919] border-[#7f13ec] shadow-2xl shadow-[#7f13ec]/20 z-10' 
                                         : 'bg-[#191919]/50 border-[#302839] hover:border-[#7f13ec]/50'
@@ -242,31 +239,31 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                                     </div>
                                 )}
                                 
-                                <div className="text-center mb-4 md:mb-6">
-                                    <h3 className="text-xl md:text-lg lg:text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                                    <p className="text-gray-400 text-sm md:text-xs lg:text-sm min-h-[60px] flex items-center justify-center px-2">{plan.description}</p>
+                                <div className="text-center mb-4 md:mb-5">
+                                    <h3 className="text-xl lg:text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                                    <p className="text-gray-400 text-sm min-h-[40px] lg:min-h-[60px] flex items-center justify-center px-2">{plan.description}</p>
                                 </div>
 
                                 <div className="text-center mb-6 md:mb-8 relative">
-                                    <div className="flex flex-col items-center justify-end min-h-[110px] pb-2">
+                                    <div className="flex flex-col items-center justify-end min-h-[90px] lg:min-h-[110px] pb-2">
                                         {plan.originalPrice ? (
                                             <div className="flex items-center gap-2 mb-1.5">
-                                                <span className="text-gray-500 line-through text-xl md:text-lg lg:text-xl decoration-gray-500/50 font-semibold">
+                                                <span className="text-gray-500 line-through text-lg lg:text-xl decoration-gray-500/50 font-semibold">
                                                     {new Intl.NumberFormat(locale, { style: 'decimal', minimumFractionDigits: language === 'vi' ? 0 : 2 }).format(plan.originalPrice)} {plan.currency}
                                                 </span>
-                                                <span className="bg-red-500/10 text-red-400 text-sm md:text-xs lg:text-sm font-extrabold px-3 py-1 rounded-full border border-red-500/20 shadow-sm">
+                                                <span className="bg-red-500/10 text-red-400 text-xs lg:text-sm font-extrabold px-2 py-0.5 rounded-full border border-red-500/20 shadow-sm">
                                                     -{discountPercent}%
                                                 </span>
                                             </div>
                                         ) : (
-                                            <div className="h-[36px] md:h-[32px] lg:h-[36px] mb-1.5"></div> 
+                                            <div className="h-[30px] lg:h-[36px] mb-1.5"></div> 
                                         )}
                                         <div className="flex justify-center items-start">
-                                            <span className="text-4xl md:text-3xl lg:text-5xl font-extrabold text-white tracking-tight">
+                                            <span className="text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
                                                 {language === 'vi' ? '' : plan.currency}
                                                 {new Intl.NumberFormat(locale, { style: 'decimal', minimumFractionDigits: language === 'vi' ? 0 : 2 }).format(plan.price)}
                                             </span>
-                                            {language === 'vi' && <span className="text-base md:text-sm lg:text-lg text-gray-400 font-medium mt-2 ml-1.5">{plan.currency}</span>}
+                                            {language === 'vi' && <span className="text-sm lg:text-lg text-gray-400 font-medium mt-2 ml-1.5">{plan.currency}</span>}
                                         </div>
                                         <p className="text-gray-500 text-xs font-medium mt-2">
                                             {plan.type === 'subscription' ? t('pricing.subscription') : t('pricing.one_time')}
@@ -274,18 +271,18 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                                     </div>
                                     
                                     <div className="mt-4 md:mt-6 border-t border-[#302839] pt-4 md:pt-6">
-                                        <div className="inline-flex items-center justify-center gap-1.5 md:gap-1 lg:gap-1.5 xl:gap-2 bg-[#2a1a35] text-[#DA70D6] px-2 py-2.5 md:px-1.5 md:py-2 lg:px-3 lg:py-2.5 rounded-xl border border-[#DA70D6]/30 w-full whitespace-nowrap overflow-hidden">
-                                            <span className="text-[10px] md:text-[9px] lg:text-[10px] xl:text-[11px] uppercase tracking-wide font-semibold opacity-90 flex-shrink-0">{t('pricing.get_now')}</span>
-                                            <span className="text-lg md:text-sm lg:text-base xl:text-lg font-bold truncate">{new Intl.NumberFormat('en-US').format(plan.credits || 0)} Credits</span>
+                                        <div className="inline-flex items-center justify-center gap-2 bg-[#2a1a35] text-[#DA70D6] px-3 py-2.5 rounded-xl border border-[#DA70D6]/30 w-full whitespace-nowrap overflow-hidden">
+                                            <span className="text-[10px] lg:text-[11px] uppercase tracking-wide font-semibold opacity-90 flex-shrink-0">{t('pricing.get_now')}</span>
+                                            <span className="text-base lg:text-lg font-bold truncate">{new Intl.NumberFormat('en-US').format(plan.credits || 0)} Credits</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <ul className="space-y-4 md:space-y-2 lg:space-y-4 mb-8 flex-grow">
+                                <ul className="space-y-3 lg:space-y-4 mb-8 flex-grow">
                                     {plan.features.map((feature, idx) => (
-                                        <li key={idx} className="flex items-start gap-3 md:gap-2 lg:gap-3 text-gray-300 text-sm md:text-xs lg:text-sm">
-                                            <div className="mt-0.5 p-0.5 rounded-full bg-green-500/10 text-green-400">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 md:h-3 md:w-3 lg:h-3.5 lg:w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <li key={idx} className="flex items-start gap-3 text-gray-300 text-sm">
+                                            <div className="mt-0.5 p-0.5 rounded-full bg-green-500/10 text-green-400 flex-shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                 </svg>
                                             </div>
@@ -297,7 +294,7 @@ const PublicPricing: React.FC<PublicPricingProps> = ({ onGoHome, onAuthNavigate,
                                 <button 
                                     onClick={() => !isButtonDisabled && handlePlanClick(plan)}
                                     disabled={IS_PAYMENT_MAINTENANCE || isButtonDisabled || isRedirecting}
-                                    className={`w-full font-bold py-3.5 px-6 md:py-2.5 md:px-4 lg:py-3.5 lg:px-6 rounded-xl transition-all duration-300 shadow-lg text-sm md:text-xs lg:text-sm flex justify-center items-center gap-2 ${
+                                    className={`w-full font-bold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-lg text-sm flex justify-center items-center gap-2 ${
                                         IS_PAYMENT_MAINTENANCE
                                             ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed' 
                                             : isButtonDisabled 
