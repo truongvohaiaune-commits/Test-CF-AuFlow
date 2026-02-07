@@ -218,6 +218,10 @@ export interface ViewSyncState {
     creativeResults: Record<string, string>; // Map View Name -> URL
     creativePrompts: Record<string, string>; // Map View Name -> Editable Prompt
     generatingViewId: string | null;
+    // New: Persisted loading states
+    generatingViews: string[]; 
+    analyzingViews: string[];
+    isBatchGenerating: boolean;
 }
 
 export interface VirtualTourState {
@@ -488,7 +492,10 @@ export const initialToolStates = {
         creativeOption: 'interior',
         creativeResults: {},
         creativePrompts: {},
-        generatingViewId: null
+        generatingViewId: null,
+        generatingViews: [],
+        analyzingViews: [],
+        isBatchGenerating: false,
     } as ViewSyncState,
     [Tool.VirtualTour]: {
         sourceImage: null,
